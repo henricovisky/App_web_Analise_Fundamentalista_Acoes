@@ -1,12 +1,11 @@
 # importar bibliotecas
 
+from datetime import date
+
 import pandas as pd
-import numpy as np
 import requests
-from bs4 import BeautifulSoup
 import yfinance as yf
-import random
-from datetime import date, datetime, timedelta
+from bs4 import BeautifulSoup
 
 #Esta função busca dos dados de açoes e fii no site FUNDAMENTUS e cria 2 arquivos em excel
 hoje = date.today()
@@ -122,7 +121,11 @@ def formula_fii(dfii):
     # Cotacao = dfii[dfii['Cotação'] <= 200]
     # Liq = Cotacao[Cotacao['Liquidez'] >= 1000000]
     # Vaq = Liq[Liq['Vacância Média'] <= 7]
-    Vaq = dfii[(dfii['Cotação'] <= 300) & (dfii['Liquidez'] >= 900000) & (dfii['Vacância Média'] <= 7)]
+    Vaq = dfii[(dfii['Cotação'] <= 300)
+               & (dfii['Liquidez'] >= 900000)
+               & (dfii['Vacância Média'] <= 7)
+               & (dfii['FFO Yield'] >= 6)
+               & (dfii['P/VP'] <= 1.20)]
 
     # Aplicação da fórmula de Fii Hibrid
 
@@ -141,7 +144,7 @@ def formula_fii(dfii):
     Offo['Score'] = Offo['Ordem P/VP'] + Offo['Ordem FFO Yield']
     FiiT = Offo.sort_values(by='Score', ascending=True)
 
-    FiiT = FiiT[['Papel', 'Segmento', 'Cotação', 'Dividend Yield', 'P/VP', 'Qtd de imóveis']]
+    FiiT = FiiT[['Papel', 'Segmento', 'Cotação', 'Dividend Yield', 'FFO Yield', 'P/VP', 'Qtd de imóveis']]
 
     FiiT.reset_index(inplace=True)
     FiiT.drop('index', axis=1, inplace=True)
@@ -174,7 +177,7 @@ def formula_fii(dfii):
 
     FiiP.reset_index(inplace=True)
     FiiP.drop('index', axis=1, inplace=True)
-    FiiP.to_excel('Fii_Papel_Mágicas.xlsx', index=False)
+    #FiiP.to_excel('Fii_Papel_Mágicas.xlsx', index=False)
     #FiiPcarteirahj = 'Fii_Papel_Mágicas_' + str(hoje) + '.xlsx'
     #FiiP.to_excel(FiiPcarteirahj, index=False)
 
