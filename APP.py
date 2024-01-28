@@ -54,12 +54,12 @@ Ac,Fii,Ac_ROIC = requisitar_dados()
 col1, col2 = st.columns(2)
 with tab1:
     with st.container():
-        Acpj_ROE = Ac[['Papel', 'Cotação', 'PJ', 'Div.Yield', 'Setor', 'Seg']]
+        #Acpj_ROE = Ac[['Papel', 'Cotação', 'PJ', 'Div.Yield', 'Setor', 'Seg']]
         Acpj_ROIC = Ac_ROIC
-        Ac = Ac[['Papel', 'Cotação', 'PJ', 'Div.Yield', 'Setor', 'Seg']].head(20).round(2)
+        Ac_ROE = Ac[['Papel', 'Cotação', 'PJ', 'Div.Yield', 'Setor', 'Seg']].head(20).round(2)
 
         # Agrupar por setor e contar a quantidade
-        contagem_por_setor = Ac.groupby('Setor').size().reset_index(name='Quantidade')
+        contagem_por_setor = Ac_ROE.groupby('Setor').size().reset_index(name='Quantidade')
         # Ordenar pelo maior
         contagem_por_setor = contagem_por_setor.sort_values(by='Quantidade', ascending=False)
         # Obter uma paleta de cores exclusiva com base nas categorias únicas
@@ -74,7 +74,7 @@ with tab1:
 
 
         # Aplicar estilos condicionais ao DataFrame
-        styled_df = Ac.round(2).style.applymap(highlight_sector, subset=['Setor'])
+        styled_df = Ac_ROE.round(2).style.applymap(highlight_sector, subset=['Setor'])
 
         fig = px.pie(contagem_por_setor, values='Quantidade', names='Setor', title='Setores', hole=0.5,color_discrete_sequence=palette)
 
@@ -94,9 +94,17 @@ with tab1:
         # Exibir o DataFrame estilizado no Streamlit
         st.dataframe(Ac_ROIC)
 
+    with st.container():
+        #limpar setores específicos
+        Ac_limp_seg = Ac[['Papel', 'Cotação', 'PJ', 'Div.Yield', 'Setor', 'Seg']]
+        Ac_limp_seg = Ac_limp_seg[(Ac_limp_seg['Setor'] != 'Real Estate') & (Ac_limp_seg['Setor'] != 'Consumer Cyclical')]
+
+        st.dataframe(Ac_limp_seg)
+
+
 with tab2:
     with st.container():
-        Acpj = Acpj_ROE
+        Acpj = Ac
         Acpj['Mrg. Seg.'] = (1 - (Acpj['Cotação'] / Acpj['PJ'])) * 100
         Acpj = Acpj[Acpj['Mrg. Seg.'] > -5]
         Acpj = Acpj[['Papel', 'Cotação', 'PJ', 'Mrg. Seg.','Setor', 'Seg']]#.head(20)

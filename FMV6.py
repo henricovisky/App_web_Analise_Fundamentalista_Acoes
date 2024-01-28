@@ -68,9 +68,9 @@ def formula_magica_ROE(df):
     Cot = df[df['Cotação'] <= 100]
     # Cot = Cot[Cot['Mrg. Líq.'] >= 5]
 
-    maiorLiquidez = Cot[Cot['Liq.2meses'] >= 1000000]
-    maiorLiquidez = maiorLiquidez[(maiorLiquidez['Dív.Brut/ Patrim.'] >= 0) & (maiorLiquidez['Dív.Brut/ Patrim.'] <= 2.5)]
-    maiorLiquidez = maiorLiquidez[maiorLiquidez['P/L'] > 0]
+    maiorLiquidez = Cot[Cot['Liq.2meses'] >= 800000]
+    maiorLiquidez = maiorLiquidez[(maiorLiquidez['Dív.Brut/ Patrim.'] >= 0) & (maiorLiquidez['Dív.Brut/ Patrim.'] <= 3)]
+    maiorLiquidez = maiorLiquidez[(maiorLiquidez['P/L'] > 0) & (maiorLiquidez['P/L'] < 50)]
     maiorLiquidez = maiorLiquidez[maiorLiquidez['ROE'] > 9]
 
 
@@ -115,8 +115,8 @@ def formula_magica_ROIC(df):
     Cot = df[df['Cotação'] <= 100]
     # Cot = Cot[Cot['Mrg. Líq.'] >= 5]
 
-    maiorLiquidez = Cot[Cot['Liq.2meses'] >= 1000000]
-    maiorLiquidez = maiorLiquidez[(maiorLiquidez['Dív.Brut/ Patrim.'] >= 0) & (maiorLiquidez['Dív.Brut/ Patrim.'] < 2.5)]
+    maiorLiquidez = Cot[Cot['Liq.2meses'] >= 800000]
+    maiorLiquidez = maiorLiquidez[(maiorLiquidez['Dív.Brut/ Patrim.'] >= 0) & (maiorLiquidez['Dív.Brut/ Patrim.'] < 3)]
     maiorLiquidez = maiorLiquidez[maiorLiquidez['EV/EBIT'] > 0]
     maiorLiquidez = maiorLiquidez[maiorLiquidez['ROIC'] > 0]
 
@@ -225,7 +225,7 @@ def hist_dividendos_5anos(Ac):
     segmento = []
     setor = []
     nome_c = []
-    nome_l = []
+    #nome_l = []
 
     for ticker in tickers:
         div6 = []
@@ -235,7 +235,7 @@ def hist_dividendos_5anos(Ac):
             setr = yf.Ticker(ticker).info['sector']
             seg = yf.Ticker(ticker).info['industry']
             nc = yf.Ticker(ticker).info['shortName']
-            nl = yf.Ticker(ticker).info['longName']
+            #nl = yf.Ticker(ticker).info['longName']
 
         except Exception as e:
             # print(f"Erro ao obter dividendos para {ticker}: {e}")
@@ -244,7 +244,7 @@ def hist_dividendos_5anos(Ac):
             setor.append(y)
             segmento.append(y)
             nome_c.append(y)
-            nome_l.append(y)
+            #nome_l.append(y)
 
         else:
 
@@ -261,14 +261,14 @@ def hist_dividendos_5anos(Ac):
             setor.append(setr)
             segmento.append(seg)
             nome_c.append(nc)
-            nome_l.append(nl)
+            #nome_l.append(nl)
 
     Ac['Div. 3A'] = dividendos
     Ac['PJ'] = (Ac['Div. 3A'] / 3) / 0.06
     Ac['Setor'] = setor
     Ac['Seg'] = segmento
     Ac['Nome Curto'] = nome_c
-    Ac['Nome Longo'] = nome_l
+    #Ac['Nome Longo'] = nome_l
 
     # Ac.to_excel('Ações_Mágicas.xlsx', index=False)
     # carteirahj = 'Ações_Mágicas_' + str(hoje) + '.xlsx'
