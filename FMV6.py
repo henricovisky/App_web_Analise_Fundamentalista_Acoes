@@ -1,7 +1,6 @@
 # importar bibliotecas
 
 from datetime import date
-
 import pandas as pd
 import requests
 import yfinance as yf
@@ -248,9 +247,9 @@ def hist_dividendos_5anos(Ac):
 
         else:
 
-            anos = ['2023', '2022', '2021']
+            anos = ['2023', '2022', '2021', '2020', '2019']
             div6 = []
-            # Lista para os dividendos dos últimos 6 anos
+            # Lista para os dividendos dos últimos 5 anos
             for x in anos:
                 if x in div:
                     div6.append(div[x].sum())
@@ -264,7 +263,7 @@ def hist_dividendos_5anos(Ac):
             #nome_l.append(nl)
 
     Ac['Div. 3A'] = dividendos
-    Ac['PJ'] = (Ac['Div. 3A'] / 3) / 0.06
+    Ac['PJ'] = (Ac['Div. 3A'] / 5) / 0.06
     Ac['Setor'] = setor
     Ac['Seg'] = segmento
     Ac['Nome Curto'] = nome_c
@@ -280,17 +279,17 @@ def hist_dividendos_5anos(Ac):
 
 df, dfii = baixar_dados_AC_and_FII()
 ROE = formula_magica_ROE(df)
-ROIC = formula_magica_ROIC(df)
+#ROIC = formula_magica_ROIC(df)
 fii = formula_fii(dfii)
 
 ROE = hist_dividendos_5anos(ROE)
-ROE = ROE[['Papel', 'Cotação', 'PJ', 'Div.Yield', 'P/L', 'ROE', 'P/VP', 'Div. 3A', 'Setor', 'Seg', 'Nome Curto', 'Nome Longo']]
+ROE = ROE[['Papel', 'Cotação', 'PJ', 'Div.Yield', 'P/L', 'ROE', 'P/VP', 'Div. 3A', 'Setor', 'Seg', 'Nome Curto']]
 
-ROIC = hist_dividendos_5anos(ROIC)
-ROIC = ROIC[['Papel', 'Cotação', 'PJ', 'Div.Yield', 'EV/EBIT', 'ROIC', 'P/VP', 'Div. 3A', 'Setor', 'Seg', 'Nome Curto', 'Nome Longo']]
+#ROIC = hist_dividendos_5anos(ROIC)
+#ROIC = ROIC[['Papel', 'Cotação', 'PJ', 'Div.Yield', 'EV/EBIT', 'ROIC', 'P/VP', 'Div. 3A', 'Setor', 'Seg', 'Nome Curto']]
 
 ROE.to_excel('Ações_Mágicas_ROE.xlsx', index=False)
-ROIC.to_excel('Ações_Mágicas_ROIC.xlsx', index=False)
+#ROIC.to_excel('Ações_Mágicas_ROIC.xlsx', index=False)
 
 #fii = hist_dividendos_5anos(fii)
 #fii = fii[['Papel', 'Segmento', 'Cotação', 'Dividend Yield', 'FFO Yield', 'P/VP', 'Qtd de imóveis']]
