@@ -1,6 +1,7 @@
 # importar bibliotecas
 
 from datetime import date
+
 import pandas as pd
 import requests
 import yfinance as yf
@@ -54,10 +55,6 @@ def baixar_dados_AC_and_FII():
     df.to_excel('dadosAções.xlsx', index=False)
     dfii.to_excel('dadosFii.xlsx', index=False)
 
-    # dfcarteirahj = 'dadosAções_' + str(hoje) + '.xlsx'
-    # dfiicarteirahj = 'dadosFii_' + str(hoje) + '.xlsx'
-    # df.to_excel(dfcarteirahj, index=False)
-    # dfii.to_excel(dfiicarteirahj, index=False)
     return df, dfii
 
 
@@ -68,8 +65,9 @@ def formula_magica_ROE(df):
     # Cot = Cot[Cot['Mrg. Líq.'] >= 5]
 
     maiorLiquidez = Cot[Cot['Liq.2meses'] >= 800000]
-    maiorLiquidez = maiorLiquidez[(maiorLiquidez['Dív.Brut/ Patrim.'] >= 0) & (maiorLiquidez['Dív.Brut/ Patrim.'] <= 3)]
-    maiorLiquidez = maiorLiquidez[(maiorLiquidez['P/L'] > 0) & (maiorLiquidez['P/L'] < 50)]
+    maiorLiquidez = maiorLiquidez[(maiorLiquidez['Dív.Brut/ Patrim.'] >= 0) & (maiorLiquidez['Dív.Brut/ Patrim.'] <= 4)]
+    #maiorLiquidez = maiorLiquidez[(maiorLiquidez['P/L'] > 0)]
+    maiorLiquidez['L/P'] = (1/maiorLiquidez['P/L'])
     maiorLiquidez = maiorLiquidez[maiorLiquidez['ROE'] > 9]
 
 
@@ -77,26 +75,23 @@ def formula_magica_ROE(df):
 
     # Aplicação da fórmula nas ações
 
-    Oev = novo.sort_values(by='P/L')
+    Oev = novo.sort_values(by='L/P', ascending=False)
     Oev = Oev.reset_index(drop=True)
-    Oev['Ordem P/L'] = Oev.index
+    Oev['Ordem L/P'] = Oev.index
 
     Oroic = Oev.sort_values(by='ROE', ascending=False)
     Oroic = Oroic.reset_index(drop=True)
     Oroic['Ordem ROE'] = Oroic.index
     dados = Oroic
 
-    dados['Score'] = dados['Ordem P/L'] + dados['Ordem ROE']
+    dados['Score'] = dados['Ordem L/P'] + dados['Ordem ROE']
     dados = dados.sort_values(by='Score', ascending=True)
 
     # Remove os Tickers duplicados
     dados['PapelF'] = dados['Papel'].str[:4]
     dados = dados.drop_duplicates(subset='PapelF')
 
-    Ac = dados  # [['Papel', 'Cotação', 'Div.Yield' , 'P/L', 'ROE', 'PJ', 'Setor', 'Seg', 'Nome Curto', 'Nome Longo']]
-
-    # dados['Prec. Compra'] = dados['Cotação'] * dados['Div.Yield']/6 * 0.9
-    # dados['Prec. Venda'] = dados['Cotação'] * dados['Div.Yield']/6 * 1.2
+    Ac = dados  # [['Papel', 'Cotação', 'Div.Yield' , 'P/L', 'ROE', 'PJ', 'Setor', 'Seg', 'Nome Curto', 'Nome Longo', 'Ordem P/L']]
 
     Ac.reset_index(inplace=True)
     Ac = Ac.drop('index', axis=1)
@@ -145,8 +140,6 @@ def formula_magica_ROIC(df):
     Ac = Ac.drop('index', axis=1)
 
     Ac.to_excel('Ações_Mágicas_ROIC.xlsx', index=False)
-    # carteirahj = 'Ações_Mágicas_' + str(hoje) + '.xlsx'
-    # Ac.to_excel(carteirahj, index=False)
 
     return Ac
 
@@ -156,10 +149,7 @@ def formula_fii(dfii):
 
     # Filtros no data frame de Fii
 
-    # Cotacao = dfii[dfii['Cotação'] <= 200]
-    # Liq = Cotacao[Cotacao['Liquidez'] >= 1000000]
-    # Vaq = Liq[Liq['Vacância Média'] <= 7]
-    Vaq = dfii[(dfii['Cotação'] <= 300) & (dfii['Liquidez'] >= 900000) & (dfii['Vacância Média'] <= 7)]
+    Vaq = dfii[(dfii['Cotação'] <= 200) & (dfii['Liquidez'] >= 1000000) & (dfii['Vacância Média'] <= 6)]
 
     # Aplicação da fórmula de Fii Hibrid
 
@@ -211,8 +201,6 @@ def formula_fii(dfii):
     FiiP.reset_index(inplace=True)
     FiiP.drop('index', axis=1, inplace=True)
     FiiP.to_excel('Fii_Papel_Mágicas.xlsx', index=False)
-    #FiiPcarteirahj = 'Fii_Papel_Mágicas_' + str(hoje) + '.xlsx'
-    #FiiP.to_excel(FiiPcarteirahj, index=False)
 
     return FiiT
 
@@ -224,7 +212,6 @@ def hist_dividendos_5anos(Ac):
     segmento = []
     setor = []
     nome_c = []
-    #nome_l = []
 
     for ticker in tickers:
         div6 = []
@@ -234,7 +221,6 @@ def hist_dividendos_5anos(Ac):
             setr = yf.Ticker(ticker).info['sector']
             seg = yf.Ticker(ticker).info['industry']
             nc = yf.Ticker(ticker).info['shortName']
-            #nl = yf.Ticker(ticker).info['longName']
 
         except Exception as e:
             # print(f"Erro ao obter dividendos para {ticker}: {e}")
@@ -243,7 +229,6 @@ def hist_dividendos_5anos(Ac):
             setor.append(y)
             segmento.append(y)
             nome_c.append(y)
-            #nome_l.append(y)
 
         else:
 
@@ -260,18 +245,12 @@ def hist_dividendos_5anos(Ac):
             setor.append(setr)
             segmento.append(seg)
             nome_c.append(nc)
-            #nome_l.append(nl)
 
     Ac['Div. 3A'] = dividendos
     Ac['PJ'] = (Ac['Div. 3A'] / 5) / 0.06
     Ac['Setor'] = setor
     Ac['Seg'] = segmento
     Ac['Nome Curto'] = nome_c
-    #Ac['Nome Longo'] = nome_l
-
-    # Ac.to_excel('Ações_Mágicas.xlsx', index=False)
-    # carteirahj = 'Ações_Mágicas_' + str(hoje) + '.xlsx'
-    # Ac.to_excel(carteirahj, index=False)
 
     return Ac
 
@@ -279,19 +258,9 @@ def hist_dividendos_5anos(Ac):
 
 df, dfii = baixar_dados_AC_and_FII()
 ROE = formula_magica_ROE(df)
-#ROIC = formula_magica_ROIC(df)
 fii = formula_fii(dfii)
 
 ROE = hist_dividendos_5anos(ROE)
-ROE = ROE[['Papel', 'Cotação', 'PJ', 'Div.Yield', 'P/L', 'ROE', 'P/VP', 'Div. 3A', 'Setor', 'Seg', 'Nome Curto']]
-
-#ROIC = hist_dividendos_5anos(ROIC)
-#ROIC = ROIC[['Papel', 'Cotação', 'PJ', 'Div.Yield', 'EV/EBIT', 'ROIC', 'P/VP', 'Div. 3A', 'Setor', 'Seg', 'Nome Curto']]
+ROE = ROE[['Papel', 'Cotação', 'PJ', 'Div.Yield', 'P/L', 'ROE', 'P/VP', 'Div. 3A', 'Setor', 'Seg', 'Nome Curto', 'Score']]
 
 ROE.to_excel('Ações_Mágicas_ROE.xlsx', index=False)
-#ROIC.to_excel('Ações_Mágicas_ROIC.xlsx', index=False)
-
-#fii = hist_dividendos_5anos(fii)
-#fii = fii[['Papel', 'Segmento', 'Cotação', 'Dividend Yield', 'FFO Yield', 'P/VP', 'Qtd de imóveis']]
-
-#fii.to_excel('Fii_Tij_Hibrid_Mágicas.xlsx', index=False)
